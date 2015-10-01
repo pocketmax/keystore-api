@@ -5,23 +5,19 @@ var express = require('express'),
 
 module.exports.app = app;
 
-//console.log(col.findOne);
-//col.findById('55eb713696d0c80d9dde677e', function(err, doc){
-//	console.log(doc);
-//});
-
 app
 .use(bodyParser.json())
 .use(function (req, res, next) {
 
-	app.config.listeners.before(req._parsedUrl.pathname, function(results){
-
+	req._key = req._parsedUrl.pathname;
+	app.config.listeners.before(req._key, function(results){
+		req._key = results;
 	});
 	next();
 
 }).get('*', function (req, res) {
 
-	app.config.listeners.getkey(req.keyId, function(results){
+	app.config.listeners.getkey(req._key, function(results){
 
 		res.status(200).json({
 			msg: 'fully assembled doc',
@@ -33,7 +29,18 @@ app
 
 }).put('*', function (req, res) {
 
-	app.config.listeners.setkey(req.keyId, req.body, function(results){
+	app.config.listeners.setkey(req._key, req.body, function(results){
+
+		res.status(201).json({
+			msg: 'fully assembled doc',
+			value: results
+		});
+
+	});
+
+}).patch('*', function (req, res) {
+
+	app.config.listeners.upsertkey(req._key, req.body, function(results){
 
 		res.status(201).json({
 			msg: 'fully assembled doc',
@@ -44,7 +51,7 @@ app
 
 }).delete('*',function (req, res) {
 
-	app.config.listeners.deletekey(req.keyId, function(results){
+	app.config.listeners.deletekey(req._key, function(results){
 
 		res.status(201).json({
 			msg: 'key deleted',
